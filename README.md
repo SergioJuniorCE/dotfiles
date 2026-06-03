@@ -16,9 +16,8 @@ Synced configuration for two environments: **Windows 11** and **WSL (Ubuntu, run
 │   ├── .bashrc
 │   ├── .tmux.conf
 │   └── .gitconfig
-├── scripts/
-│   ├── bootstrap.ps1         # Windows: create directory junctions
-│   └── bootstrap.sh          # WSL: create symlinks + install oh-my-zsh
+├── bootstrap.ps1              # Windows: create directory junctions
+├── bootstrap.sh               # WSL: create symlinks + install oh-my-zsh
 ├── .gitignore
 ├── LICENSE
 └── README.md

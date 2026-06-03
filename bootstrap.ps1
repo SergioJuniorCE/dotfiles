@@ -1,4 +1,3 @@
-#!/usr/bin/env pwsh
 <#
 .SYNOPSIS
     Bootstrap Windows dotfiles: create directory junctions from $env:USERPROFILE
@@ -20,7 +19,6 @@
     .\bootstrap.ps1 -DotfilesDir D:\code\dotfiles
 #>
 
-[CmdletBinding()]
 param(
     [string]$DotfilesDir = (Join-Path $env:USERPROFILE 'dotfiles')
 )
@@ -84,12 +82,19 @@ foreach ($entry in $links.GetEnumerator()) {
             }
         } else {
             $backup = "$target.bak-$stamp"
-            Write-Warn "Existing real path; moving to $backup"
-            Move-Item -LiteralPath $target -Destination $backup
+            Write-Warn "Existing real path; backing up to $backup"
+            # Mirror to backup then remove source. Robocopy handles read-only
+            # files (e.g. the read-only .git/HEAD inside git submodules) that
+            # PowerShell's Move-Item refuses to touch.
+            & robocopy "$target" "$backup" /MIR /R:1 /W:1 /NFL /NDL /NJH /NJS /NC /NS /NP | Out-Null
+            if ($LASTEXITCODE -ge 8) {
+                throw "robocopy failed backing up $target (exit $LASTEXITCODE)"
+            }
+            Remove-Item -LiteralPath $target -Recurse -Force
         }
     }
 
-    $targetParent = Split-Path -LiteralPath $target -Parent
+    $targetParent = [System.IO.Path]::GetDirectoryName($target)
     if (-not (Test-Path -LiteralPath $targetParent)) {
         New-Item -ItemType Directory -Path $targetParent -Force | Out-Null
     }
