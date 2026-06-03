@@ -17,6 +17,7 @@ Synced configuration for two environments: **Windows 11** and **WSL (Ubuntu, run
 │   ├── .tmux.conf
 │   └── .gitconfig
 ├── bootstrap.ps1              # Windows: create directory junctions
+├── bootstrap-wsl.ps1          # Windows: pick a WSL distro and run bootstrap.sh inside it
 ├── bootstrap.sh               # WSL: create symlinks + install oh-my-zsh
 ├── .gitignore
 ├── LICENSE
@@ -45,13 +46,13 @@ when missing, which keeps this repo small and always up-to-date.
 From PowerShell, in this repo:
 
 ```powershell
-.\scripts\bootstrap.ps1
+.\bootstrap.ps1
 ```
 
 Optional: pass a different repo path:
 
 ```powershell
-.\scripts\bootstrap.ps1 -DotfilesDir D:\code\dotfiles
+.\bootstrap.ps1 -DotfilesDir D:\code\dotfiles
 ```
 
 The script creates Windows **directory junctions** under `%USERPROFILE%\.config`.
@@ -61,21 +62,34 @@ admin rights. Existing real directories at the target are moved to
 
 ### WSL
 
-From inside WSL:
+From PowerShell on the Windows host (recommended — picks the right distro):
 
-```bash
-bash /mnt/c/Users/ivann/dotfiles/scripts/bootstrap.sh
+```powershell
+.\bootstrap-wsl.ps1
 ```
 
-Or, if the repo is already at `~/dotfiles`:
+`bootstrap-wsl.ps1` calls `wsl -l -v`, decodes the (UTF-16) output, and
+either auto-picks the default distro or prompts you to choose when more
+than one is installed. The bash bootstrap is then invoked inside the
+chosen distro.
 
-```bash
-~/dotfiles/scripts/bootstrap.sh
+Flags:
+
+```powershell
+.\bootstrap-wsl.ps1 -Distro Ubuntu2404   # skip the picker
+.\bootstrap-wsl.ps1 -NonInteractive      # always use the WSL default
 ```
 
-The script symlinks shell config and `~/.config/opencode`, then installs
-`oh-my-zsh` if it isn't already present (using `--keep-zshrc` so the
-just-symlinked `.zshrc` is not overwritten).
+Inside the bash bootstrap, shell config and `~/.config/opencode` are
+symlinked from the repo, and `oh-my-zsh` is installed if it isn't already
+present (using `--keep-zshrc` so the just-symlinked `.zshrc` is not
+overwritten).
+
+If you ever want to run `bootstrap.sh` directly from inside WSL:
+
+```bash
+bash /mnt/c/Users/ivann/dotfiles/bootstrap.sh /mnt/c/Users/ivann/dotfiles
+```
 
 ## API keys
 
@@ -97,8 +111,7 @@ into opencode via a wrapper.
 2. If the file exists at the target on disk, the bootstrap will move it to
    a `.bak-<timestamp>` sibling the first time it runs.
 3. Add the new link to the map at the top of the relevant bootstrap script
-   (`scripts/bootstrap.ps1` or `scripts/bootstrap.sh`) so subsequent
-   bootstraps pick it up.
+   (`bootstrap.ps1` or `bootstrap.sh`) so subsequent bootstraps pick it up.
 4. Commit.
 
 ## Why junctions on Windows, symlinks on WSL?
