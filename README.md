@@ -106,15 +106,22 @@ From PowerShell on the Windows host (recommended — picks the right distro):
 ```
 
 `bootstrap-wsl.ps1` calls `wsl -l -v`, decodes the (UTF-16) output, and
-either auto-picks the default distro or prompts you to choose when more
-than one is installed. The bash bootstrap is then invoked inside the
-chosen distro.
+prompts you to pick a distro. The bash bootstrap is then invoked inside
+the chosen distro.
+
+The picker always shows (even with a single distro) so you can confirm or
+override on any machine. Three ways to answer:
+
+- **Press Enter** — use the WSL default distro (the one marked with `*`).
+- **Type a number** — pick one of the listed distros.
+- **Type any other text** — use that as a custom distro name (useful if a
+  distro isn't in the `wsl -l -v` output, e.g. it was never registered).
 
 Flags:
 
 ```powershell
-.\bootstrap-wsl.ps1 -Distro Ubuntu2404   # skip the picker
-.\bootstrap-wsl.ps1 -NonInteractive      # always use the WSL default
+.\bootstrap-wsl.ps1 -Distro Ubuntu        # skip the picker, use 'Ubuntu' explicitly
+.\bootstrap-wsl.ps1 -NonInteractive      # use the WSL default, no prompt
 ```
 
 Inside the bash bootstrap, shell config and `~/.config/opencode` are

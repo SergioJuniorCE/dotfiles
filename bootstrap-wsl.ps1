@@ -105,32 +105,47 @@ if ($distros.Count -eq 0) {
 $chosen = $null
 
 if ($Distro) {
+    # Explicit -Distro wins. May match a name from the list or be a custom name.
     $chosen = $distros | Where-Object { $_.Name -eq $Distro } | Select-Object -First 1
     if (-not $chosen) {
-        $available = ($distros | ForEach-Object { $_.Name }) -join ', '
-        throw "Distro '$Distro' not found. Available: $available"
+        Write-Warning "Distro '$Distro' is not in the wsl -l -v output. Using it anyway (it may be unregistered or hidden)."
+        $chosen = [PSCustomObject]@{ Name = $Distro; State = 'Unknown'; Default = $false }
     }
-} elseif ($NonInteractive -or $distros.Count -eq 1) {
+} elseif ($NonInteractive) {
     $chosen = $distros | Where-Object { $_.Default } | Select-Object -First 1
     if (-not $chosen) { $chosen = $distros[0] }
-    $reason = if ($NonInteractive) { '-NonInteractive' } else { 'only one available' }
-    Write-Host "==> Auto-selected distro ($reason): $($chosen.Name)" -ForegroundColor Cyan
+    Write-Host "==> Auto-selected distro (-NonInteractive): $($chosen.Name)" -ForegroundColor Cyan
 } else {
-    Write-Host "==> Found $($distros.Count) WSL distros:" -ForegroundColor Cyan
+    # Always show the picker, even with a single distro, so the user can
+    # confirm or override. Enter alone = default; a number picks from the
+    # list; any other text is used as a custom distro name.
+    $defaultDistro = $distros | Where-Object { $_.Default } | Select-Object -First 1
+    if (-not $defaultDistro) { $defaultDistro = $distros[0] }
+    $defaultIndex = [array]::IndexOf($distros, $defaultDistro) + 1
+
+    Write-Host "==> Found $($distros.Count) WSL distro(s):" -ForegroundColor Cyan
     for ($i = 0; $i -lt $distros.Count; $i++) {
         $marker = if ($distros[$i].Default) { ' (default)' } else { '' }
         Write-Host ("    {0}) {1} [{2}]{3}" -f ($i + 1), $distros[$i].Name, $distros[$i].State, $marker)
     }
     Write-Host ''
-    $rawChoice = Read-Host "Pick a distro (1-$($distros.Count))"
-    if ($rawChoice -notmatch '^\d+$') {
-        throw "Invalid choice: $rawChoice"
+    $prompt = "Pick a distro (1-$($distros.Count)), press Enter for [$($defaultDistro.Name)], or type a custom name"
+    $rawChoice = (Read-Host $prompt).Trim()
+
+    if ([string]::IsNullOrEmpty($rawChoice)) {
+        $chosen = $defaultDistro
+    } elseif ($rawChoice -match '^\d+$' -and $rawChoice -ge 1 -and $rawChoice -le $distros.Count) {
+        $chosen = $distros[[int]$rawChoice - 1]
+    } else {
+        # Treat as a custom distro name.
+        $match = $distros | Where-Object { $_.Name -eq $rawChoice } | Select-Object -First 1
+        if ($match) {
+            $chosen = $match
+        } else {
+            Write-Warning "'$rawChoice' is not in the wsl -l -v output. Using it anyway (it may be unregistered or hidden)."
+            $chosen = [PSCustomObject]@{ Name = $rawChoice; State = 'Unknown'; Default = $false }
+        }
     }
-    $idx = [int]$rawChoice
-    if ($idx -lt 1 -or $idx -gt $distros.Count) {
-        throw "Invalid choice: $rawChoice (must be 1-$($distros.Count))"
-    }
-    $chosen = $distros[$idx - 1]
 }
 
 Write-Host "==> Using WSL distro: $($chosen.Name) [$($chosen.State)]" -ForegroundColor Green
