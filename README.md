@@ -39,6 +39,43 @@ Synced configuration for two environments: **Windows 11** and **WSL (Ubuntu, run
 `oh-my-zsh` is **not** vendored. The WSL bootstrap installs it from upstream
 when missing, which keeps this repo small and always up-to-date.
 
+## Prerequisites
+
+### JetBrains Mono Nerd Font
+
+The wezterm config (`windows/.config/wezterm/config/fonts.lua`) sets the
+terminal font to **JetBrainsMono Nerd Font**. Without it, wezterm will fall
+back to a default and many Nerd Font glyphs (used by powerline, ls-icons,
+nerd-tree, etc.) will render as boxes or `?`.
+
+#### Install on Windows (recommended — scoop)
+
+```powershell
+scoop bucket add nerd-fonts
+scoop install JetBrainsMono-NF
+```
+
+If the font files are present under `~\scoop\apps\JetBrainsMono-NF\current\`
+but Windows apps don't see them, scoop's post-install step didn't register
+them with `C:\Windows\Fonts`. Re-run it explicitly:
+
+```powershell
+scoop install JetBrainsMono-NF --force
+```
+
+#### Install on Windows (manual)
+
+Download `JetBrainsMono.zip` from
+<https://www.nerdfonts.com/font-downloads>, extract, right-click each
+`.ttf` → **Install for all users**.
+
+#### WSL
+
+Wezterm runs on Windows, so the Windows install above is enough. If you
+also use GUI Linux apps and want JetBrainsMono Nerd Font there, install
+the matching `.ttf` files into `/usr/local/share/fonts/` (or `~/.local/share/fonts/`)
+and run `fc-cache -fv`.
+
 ## First-time setup
 
 ### Windows
