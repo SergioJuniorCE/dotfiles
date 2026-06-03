@@ -1,0 +1,27 @@
+{
+    "$schema": "https://opencode.ai/config.json",
+    "small_model": "deepseek/deepseek-v4-flash",
+    "plugin": [
+        "/root/.config/opencode/plugins/crofai-plugin.ts",
+    ],
+    "provider": {
+        "crofai": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "CrofAI",
+            "options": {
+                "baseURL": "https://crof.ai/v1",
+                // Set your API key here. Kept out of git on purpose.
+                "apiKey": "",
+            },
+        },
+        "commandcode": {
+            "npm": "@ai-sdk/openai-compatible",
+            "name": "Command Code",
+            "options": {
+                "baseURL": "https://api.commandcode.ai/provider/v1",
+                // Set your API key here. Kept out of git on purpose.
+                "apiKey": "",
+            },
+        },
+    },
+}
