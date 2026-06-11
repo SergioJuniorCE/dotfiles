@@ -7,9 +7,9 @@ local options = {
 }
 
 if platform.is_win then
-   options.default_prog = { 'wsl.exe', '~', '-d', 'Ubuntu-24.04' }
+   options.default_prog = { 'cmd.exe', '/c', 'wsl.exe ~ -d Ubuntu-24.04 & powershell -NoExit -Command "Set-Location ~"' }
    options.launch_menu = {
-      { label = 'WSL Ubuntu', args = { 'wsl.exe', '~', '-d', 'Ubuntu-24.04' } },
+      { label = 'WSL Ubuntu', args = { 'cmd.exe', '/c', 'wsl.exe ~ -d Ubuntu-24.04 & powershell -NoExit -Command "Set-Location ~"' } },
       { label = 'PowerShell Desktop', args = { 'powershell' } },
       { label = 'Command Prompt', args = { 'cmd' } },
       {
