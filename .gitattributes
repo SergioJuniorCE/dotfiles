@@ -1,0 +1,10 @@
+# Ensure shell scripts and config use LF line endings everywhere
+*.sh    text eol=lf
+*.bash  text eol=lf
+*.zsh   text eol=lf
+*.bashrc   text eol=lf
+*.zshrc    text eol=lf
+*.bash_profile text eol=lf
+*.profile  text eol=lf
+*.tmux.conf text eol=lf
+*.gitconfig text eol=lf
