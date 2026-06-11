@@ -16,7 +16,7 @@ if platform.is_win then
    options.wsl_domains = {
       {
          name = 'wsl:ubuntu',
-         distribution = 'Ubuntu2404',
+         distribution = 'Ubuntu-24.04',
          username = 'ubuntu',
          default_cwd = '/home/ubuntu',
          default_prog = { 'bash', '-l' },

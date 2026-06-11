@@ -22,7 +22,7 @@
 
 .EXAMPLE
     .\bootstrap-wsl.ps1
-    .\bootstrap-wsl.ps1 -Distro Ubuntu2404
+    .\bootstrap-wsl.ps1 -Distro Ubuntu-24.04
     .\bootstrap-wsl.ps1 -NonInteractive
 #>
 

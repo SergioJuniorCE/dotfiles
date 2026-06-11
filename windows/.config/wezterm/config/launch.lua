@@ -7,9 +7,9 @@ local options = {
 }
 
 if platform.is_win then
-   options.default_prog = { 'wsl.exe', '~', '-d', 'Ubuntu2404' }
+   options.default_prog = { 'wsl.exe', '~', '-d', 'Ubuntu-24.04' }
    options.launch_menu = {
-      { label = 'WSL Ubuntu', args = { 'wsl.exe', '~', '-d', 'Ubuntu2404' } },
+      { label = 'WSL Ubuntu', args = { 'wsl.exe', '~', '-d', 'Ubuntu-24.04' } },
       { label = 'PowerShell Desktop', args = { 'powershell' } },
       { label = 'Command Prompt', args = { 'cmd' } },
       {
