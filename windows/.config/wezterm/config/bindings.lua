@@ -5,6 +5,19 @@ local act = wezterm.action
 
 local mod = {}
 
+local function split_in_current_domain(window, pane, direction)
+   local cwd = pane:get_current_working_dir()
+   local spawn_cmd = {
+      domain = { DomainName = pane:get_domain_name() },
+   }
+   if cwd and cwd.path then
+      spawn_cmd.cwd = cwd.path
+   end
+
+   local action = direction == 'vertical' and act.SplitVertical or act.SplitHorizontal
+   window:perform_action(action(spawn_cmd), pane)
+end
+
 if platform.is_mac then
    mod.SUPER = 'SUPER'
    mod.SUPER_REV = 'SUPER|CTRL'
@@ -79,7 +92,7 @@ local keys = {
    -- tabs --
    -- tabs: spawn+close
    { key = 't',          mods = mod.SUPER,     action = act.SpawnTab('DefaultDomain') },
-   { key = 't',          mods = mod.SUPER_REV, action = act.SpawnTab({ DomainName = 'wsl:ubuntu-fish' }) },
+   { key = 't',          mods = mod.SUPER_REV, action = act.SpawnTab({ DomainName = 'wsl:ubuntu' }) },
    { key = 'w',          mods = mod.SUPER_REV, action = act.CloseCurrentTab({ confirm = false }) },
 
    -- tabs: navigation
@@ -192,17 +205,33 @@ local keys = {
    {
       key = [[\]],
       mods = mod.SUPER,
-      action = act.SplitVertical({ domain = 'CurrentPaneDomain' }),
+      action = wezterm.action_callback(function(window, pane)
+         split_in_current_domain(window, pane, 'vertical')
+      end),
    },
    {
       key = [[\]],
       mods = mod.SUPER_REV,
-      action = act.SplitHorizontal({ domain = 'CurrentPaneDomain' }),
+      action = wezterm.action_callback(function(window, pane)
+         split_in_current_domain(window, pane, 'horizontal')
+      end),
    },
 
    -- panes: split via number keys
-   { key = '4',          mods = mod.SUPER,     action = act.SplitVertical({ domain = 'CurrentPaneDomain' }) },
-   { key = '5',          mods = mod.SUPER,     action = act.SplitHorizontal({ domain = 'CurrentPaneDomain' }) },
+   {
+      key = '4',
+      mods = mod.SUPER,
+      action = wezterm.action_callback(function(window, pane)
+         split_in_current_domain(window, pane, 'vertical')
+      end),
+   },
+   {
+      key = '5',
+      mods = mod.SUPER,
+      action = wezterm.action_callback(function(window, pane)
+         split_in_current_domain(window, pane, 'horizontal')
+      end),
+   },
 
    -- panes: zoom+close pane
    { key = 'Enter', mods = mod.SUPER,     action = act.TogglePaneZoomState },
@@ -243,14 +272,16 @@ local keys = {
          pane:send_text('cd ' .. dev_dir .. '\n')
          pane:activate()
 
+         local domain = { DomainName = pane:get_domain_name() }
+
          -- First split: A | B
-         window:perform_action(act.SplitVertical({ domain = 'CurrentPaneDomain' }))
+         window:perform_action(act.SplitVertical({ domain = domain }))
          local pane_right = window:active_pane()
          pane_right:send_text('cd ' .. dev_dir .. '\n')
 
          -- Second split: B becomes B-top / B-bottom
          pane_right:activate()
-         window:perform_action(act.SplitHorizontal({ domain = 'CurrentPaneDomain' }))
+         window:perform_action(act.SplitHorizontal({ domain = domain }))
          local pane_bottom_right = window:active_pane()
          pane_bottom_right:send_text('cd ' .. dev_dir .. '\n')
 

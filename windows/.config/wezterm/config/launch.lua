@@ -2,19 +2,26 @@ local platform = require('utils.platform')
 
 ---@type Config
 local options = {
-   default_prog = {},
    launch_menu = {},
 }
 
 if platform.is_win then
-   options.default_prog = { 'cmd.exe', '/c', 'wsl.exe ~ -d Ubuntu-24.04 & powershell -NoExit -Command "Set-Location ~"' }
    options.launch_menu = {
-      { label = 'WSL Ubuntu', args = { 'cmd.exe', '/c', 'wsl.exe ~ -d Ubuntu-24.04 & powershell -NoExit -Command "Set-Location ~"' } },
-      { label = 'PowerShell Desktop', args = { 'powershell' } },
-      { label = 'Command Prompt', args = { 'cmd' } },
+      {
+         label = 'WSL Ubuntu (root)',
+         domain = { DomainName = 'wsl:ubuntu' },
+      },
+      {
+         label = 'PowerShell Desktop',
+         domain = { DomainName = 'exec:powershell' },
+      },
+      {
+         label = 'Command Prompt',
+         domain = { DomainName = 'exec:cmd' },
+      },
       {
          label = 'Git Bash',
-         args = { 'C:\\Users\\ivann\\AppData\\Local\\Microsoft\\WindowsApps\\bash.exe' },
+         domain = { DomainName = 'exec:git-bash' },
       },
    }
 elseif platform.is_mac then

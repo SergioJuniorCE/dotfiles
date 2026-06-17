@@ -41,7 +41,7 @@ local function build_choices()
       })
       table.insert(choices_data, {
          args = v.args,
-         domain = 'DefaultDomain',
+         domain = v.domain or 'DefaultDomain',
       })
       idx = idx + 1
    end
