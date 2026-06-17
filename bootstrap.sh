@@ -74,6 +74,46 @@ cyan "==> Linking ~/.config/opencode"
 mkdir -p "$HOME/.config"
 link_path "$HOME/.config/opencode" "$WSL_DIR/.config/opencode"
 
+install_zsh() {
+    cyan "  Installing zsh..."
+    if command -v apt-get >/dev/null 2>&1; then
+        sudo apt-get update && sudo apt-get install -y zsh
+    elif command -v pacman >/dev/null 2>&1; then
+        sudo pacman -Syu --noconfirm zsh
+    elif command -v dnf >/dev/null 2>&1; then
+        sudo dnf install -y zsh
+    elif command -v yum >/dev/null 2>&1; then
+        sudo yum install -y zsh
+    elif command -v apk >/dev/null 2>&1; then
+        sudo apk add zsh
+    elif command -v brew >/dev/null 2>&1; then
+        brew install zsh
+    else
+        echo "  Could not find a supported package manager (apt-get, pacman, dnf, yum, apk, brew)." >&2
+        echo "  Please install zsh manually." >&2
+        exit 1
+    fi
+}
+
+cyan "==> Checking zsh"
+if ! command -v zsh >/dev/null 2>&1; then
+    yellow "  Zsh is not installed."
+    if read -p "  Would you like to install zsh? [y/N]: " -r response; then
+        :
+    else
+        response="n"
+    fi
+
+    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        install_zsh
+    else
+        echo "  Zsh installation declined or script is non-interactive. Please install zsh manually." >&2
+        exit 1
+    fi
+else
+    gray "  zsh is already installed"
+fi
+
 cyan "==> Checking oh-my-zsh"
 if [ -d "$HOME/.oh-my-zsh" ]; then
     gray "  already installed at $HOME/.oh-my-zsh"
@@ -83,6 +123,17 @@ else
     green "  oh-my-zsh installed"
 fi
 
+cyan "==> Setting zsh as default shell"
+ZSH_PATH="$(command -v zsh)"
+CURRENT_SHELL="$(getent passwd "$USER" | cut -d: -f7)"
+if [ "$CURRENT_SHELL" = "$ZSH_PATH" ]; then
+    gray "  already set to $ZSH_PATH"
+else
+    yellow "  changing default shell from $CURRENT_SHELL to $ZSH_PATH"
+    sudo chsh -s "$ZSH_PATH" "$USER"
+    green "  default shell set to $ZSH_PATH"
+fi
+
 echo
 green "Bootstrap complete."
-echo "Start a new zsh session or run: source ~/.zshrc"
+echo "Start a new zsh session or run: exec zsh"
