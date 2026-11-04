@@ -1,108 +1,55 @@
-export home=/home/sjce
-export ZSH="$HOME/.oh-my-zsh"
-ZSH_THEME="awesomepanda"
-plugins=(git)
-source $ZSH/oh-my-zsh.sh
+export PATH="$HOME/.local/bin:$PATH"
 
-# fnm
-FNM_PATH="/root/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "$(fnm env --shell bash)"
+autoload -Uz compinit && compinit
+
+# oh-my-posh, theme copied from C:\Users\sergi\atomic.omp.json
+if command -v oh-my-posh >/dev/null 2>&1; then
+   eval "$(oh-my-posh init zsh --config "$HOME/.config/oh-my-posh/atomic.omp.json")"
 fi
 
+# ---- ported from the Windows PowerShell profile ----
+
+# gx: add everything, commit, push
+gx() {
+   if [ $# -eq 0 ]; then
+      print -u2 "Usage: gx <commit message>"
+      return 1
+   fi
+   git add . && git commit -m "$*" && git push
+}
+
+# killport: the Windows `fuser` helper, renamed so it does not shadow /usr/bin/fuser
+killport() {
+   local port=$1
+   if [ -z "$port" ]; then
+      print -u2 "Usage: killport <port>"
+      return 1
+   fi
+   local pids
+   pids=$(ss -lptnH "sport = :$port" 2>/dev/null | grep -oP 'pid=\K[0-9]+' | sort -u)
+   if [ -z "$pids" ]; then
+      print "No process listening on port $port."
+      return 0
+   fi
+   for p in ${(f)pids}; do
+      print "Killing $(ps -p $p -o comm= 2>/dev/null) (pid $p) on port $port..."
+      kill -9 "$p" 2>/dev/null
+   done
+   print "Port $port is now free."
+}
+
 # bun completions
-[ -s "/root/.bun/_bun" ] && source "/root/.bun/_bun"
+[ -s "/home/sergio/.bun/_bun" ] && source "/home/sergio/.bun/_bun"
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"
 
-# source env vars
-[ -f "$HOME/.env" ] && source "$HOME/.env"
-
-# opencode
-export PATH=/root/.opencode/bin:$PATH
-
-conf() {
-    # Detect the shell config file dynamically
-    local config_file
-    if [ -n "$BASH_VERSION" ]; then
-        config_file="$HOME/.bashrc"
-    elif [ -n "$ZSH_VERSION" ]; then
-        config_file="$HOME/.zshrc"
-    else
-        config_file="$HOME/.profile"
-    fi
-
-    case "$1" in
-        edit)
-            zed "$config_file"
-            ;;
-        reload)
-            # 'source' and '.' are identical in Bash/Zsh
-            . "$config_file"
-            echo "🔄 Configuration reloaded!"
-            ;;
-        *)
-            if [ -z "$1" ]; then
-                zed "$config_file"
-            else
-                echo "Usage: conf [edit|reload]"
-            fi
-            ;;
-    esac
-}
-# pnpm
-export PNPM_HOME="/root/.local/share/pnpm"
-case ":$PATH:" in
-  *":$PNPM_HOME/bin:"*) ;;
-  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
-esac
-# pnpm end
-
-# quick git add, commit, push
-gx() {
-    git add .
-    git commit -m "x"
-    git push
-}
-
-# fnm
-FNM_PATH="/home/sjce/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "$(fnm env --shell zsh)"
-fi
-
-# fnm
-FNM_PATH="/root/.local/share/fnm"
-if [ -d "$FNM_PATH" ]; then
-  export PATH="$FNM_PATH:$PATH"
-  eval "$(fnm env --shell zsh)"
-fi
-
-# Zed on WSL fails when cwd is under /root/ (but not /root itself).
-zed() {
-  local -a args
-  args=("$@")
-  if [ ${#args[@]} -eq 0 ]; then
-    args=("$(pwd)")
-  else
-    local i
-    for i in {1..$#args}; do
-      if [ "${args[$i]}" = "." ]; then
-        args[$i]="$(pwd)"
-      fi
-    done
-  fi
-  (cd ~ && command zed "${args[@]}")
-}
-
-# >>> grok installer >>>
-export PATH="$HOME/.grok/bin:$PATH"
-fpath=(~/.grok/completions/zsh $fpath)
-autoload -Uz compinit && compinit -C
-# <<< grok installer <<<
-export PATH=$PATH:/usr/local/go/bin
-export PATH=$PATH:$(go env GOPATH)/bin
+# Report the working directory as a plain file:// URI. oh-my-posh's own
+# "pwd": "osc7" escape emits a Windows UNC path inside WSL
+# (///wsl.localhost/<distro>/...), which WezTerm feeds back to wsl.exe as
+# `--cd`; that path cannot be chdir'd into, so new tabs and splits failed
+# with "chdir(...) failed" and started in /.
+_wezterm_osc7() { printf '\033]7;file://%s\a' "${PWD// /%20}" }
+autoload -Uz add-zsh-hook
+add-zsh-hook precmd _wezterm_osc7

@@ -74,6 +74,10 @@ cyan "==> Linking ~/.config/opencode"
 mkdir -p "$HOME/.config"
 link_path "$HOME/.config/opencode" "$WSL_DIR/.config/opencode"
 
+cyan "==> Linking ~/.config/oh-my-posh"
+mkdir -p "$HOME/.config"
+link_path "$HOME/.config/oh-my-posh" "$WSL_DIR/.config/oh-my-posh"
+
 install_zsh() {
     cyan "  Installing zsh..."
     if command -v apt-get >/dev/null 2>&1; then
