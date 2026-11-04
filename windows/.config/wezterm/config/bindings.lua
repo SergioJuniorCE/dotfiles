@@ -5,13 +5,46 @@ local act = wezterm.action
 
 local mod = {}
 
+---Working directory of `pane`, usable as the `cwd` of a pane spawned in the
+---same domain. Returns nil when it cannot be resolved reliably.
+---@param pane Pane
+---@return string|nil
+local function pane_cwd(pane)
+   local cwd_uri = pane:get_current_working_dir()
+   local cwd = nil
+   if type(cwd_uri) == 'string' then
+      cwd = cwd_uri
+   elseif cwd_uri and cwd_uri.file_path then
+      -- file_path decodes percent-encoding and is the only field that is not
+      -- re-encoded, so it is the closest thing to a native path here.
+      cwd = cwd_uri.file_path
+   end
+
+   if not cwd or cwd == '' then
+      return nil
+   end
+
+   -- The URI path keeps its leading slash, so a Windows drive arrives as
+   -- `/C:/Users/...`; without stripping it the child process cannot chdir.
+   cwd = cwd:gsub('^/(%a:/)', '%1')
+
+   -- A WSL pane can still report a UNC-style path that wsl.exe cannot chdir
+   -- into; leaving `cwd` unset lets the domain's default directory apply.
+   if cwd:find('wsl%.localhost', 1) then
+      return nil
+   end
+
+   return cwd
+end
+
 local function split_in_current_domain(window, pane, direction)
-   local cwd = pane:get_current_working_dir()
    local spawn_cmd = {
-      domain = { DomainName = pane:get_domain_name() },
+      domain = 'CurrentPaneDomain',
    }
-   if cwd and cwd.path then
-      spawn_cmd.cwd = cwd.path
+
+   local cwd = pane_cwd(pane)
+   if cwd then
+      spawn_cmd.cwd = cwd
    end
 
    local action = direction == 'vertical' and act.SplitVertical or act.SplitHorizontal
@@ -252,6 +285,10 @@ local keys = {
       mods = mod.SUPER_REV,
       action = act.PaneSelect({ alphabet = '1234567890', mode = 'SwapWithActiveKeepFocus' }),
    },
+   { key = 'LeftArrow',  mods = mod.SUPER_REV, action = act.RotatePanes('CounterClockwise') },
+   { key = 'RightArrow', mods = mod.SUPER_REV, action = act.RotatePanes('Clockwise') },
+   { key = 'UpArrow',    mods = mod.SUPER_REV, action = act.RotatePanes('CounterClockwise') },
+   { key = 'DownArrow',  mods = mod.SUPER_REV, action = act.RotatePanes('Clockwise') },
 
    -- panes: scroll pane
    { key = 'u',        mods = mod.SUPER, action = act.ScrollByLine(-5) },
