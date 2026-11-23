@@ -51,8 +51,9 @@ if (-not (Test-Path -LiteralPath $userConfig)) {
 
 # Map of source (relative to repo) -> target (relative to $env:USERPROFILE)
 $links = @{
-    '.config\opencode' = '.config\opencode'
-    '.config\wezterm'  = '.config\wezterm'
+    '.config\opencode'    = '.config\opencode'
+    '.config\wezterm'     = '.config\wezterm'
+    '.t3\userdata\themes' = '.t3\userdata\themes'
 }
 
 $stamp = Get-Date -Format 'yyyyMMdd-HHmmss'

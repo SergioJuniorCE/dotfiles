@@ -7,9 +7,11 @@ Synced configuration for two environments: **Windows 11** and **WSL (Ubuntu, run
 ```
 .
 ├── windows/                  # configs for native Windows
-│   └── .config/
-│       ├── opencode/         # opencode config + plugins
-│       └── wezterm/          # wezterm terminal config
+│   ├── .config/
+│   │   ├── opencode/         # opencode config + plugins
+│   │   └── wezterm/          # wezterm terminal config
+│   └── .t3/
+│       └── userdata/themes/  # T3 Code custom themes (y3-theme)
 ├── wsl/                      # configs for WSL/Linux
 │   ├── .config/opencode/     # opencode config + plugins
 │   ├── .zshrc
@@ -30,6 +32,7 @@ Synced configuration for two environments: **Windows 11** and **WSL (Ubuntu, run
 |---|---|---|
 | Windows | `windows/.config/opencode/` | `%USERPROFILE%\.config\opencode` (junction) |
 | Windows | `windows/.config/wezterm/`  | `%USERPROFILE%\.config\wezterm` (junction) |
+| Windows | `windows/.t3/userdata/themes/` | `%USERPROFILE%\.t3\userdata\themes` (junction) |
 | WSL     | `wsl/.zshrc`        | `~/.zshrc` (symlink) |
 | WSL     | `wsl/.bashrc`       | `~/.bashrc` (symlink) |
 | WSL     | `wsl/.tmux.conf`    | `~/.tmux.conf` (symlink) |
